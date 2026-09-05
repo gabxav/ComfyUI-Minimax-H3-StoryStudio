@@ -1,0 +1,101 @@
+{
+  "id": "2e7e936d-6faf-498a-9b62-a864b4e024d5",
+  "revision": 0,
+  "last_node_id": 501,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 500,
+      "type": "XavierH3StoryStudio",
+      "pos": [
+        140,
+        120
+      ],
+      "size": [
+        660,
+        730
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null
+        },
+        {
+          "name": "saved_video",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "XavierH3StoryStudio"
+      },
+      "widgets_values": [
+        "minimax/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+        "minimax/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "minimax/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "minimax/minimax_h3_video_vae_fp16.safetensors",
+        "minimax/minimax_h3_audio_vae_fp32.safetensors",
+        "minimax/minimax_h3_ref2v_turbo_8step_v1.0_768p_comfyui_bf16.safetensors",
+        512,
+        512,
+        8,
+        "euler",
+        "simple",
+        "auto",
+        true,
+        6,
+        0.5,
+        true,
+        "{\"version\": 1, \"project_id\": \"story_studio_example\", \"title\": \"The forest observatory\", \"shared_prompt\": \"A continuous cinematic shot in a quiet forest observatory at dawn. One explorer wears a mustard-yellow field jacket and carries a small brass lantern. Maintain the same person, clothes, place, camera style and soft morning light across all scenes. Natural forest ambience; no music, captions or dialogue.\", \"references\": {\"images\": [], \"videos\": [], \"audios\": []}, \"seed\": 240915, \"context_frames\": 22, \"continue_audio\": true, \"ref_image_size\": \"match\", \"scenes\": [{\"title\": \"Arrival\", \"prompt\": \"A fifteen-second tracking shot. The explorer walks slowly along a mossy path toward an old glass observatory. From 0 to 10 seconds the camera follows at shoulder height. From 10 to 15 seconds the explorer stops beside the door and starts lifting a hand toward its handle. Leaves move softly in the breeze; footsteps fade as the explorer stops.\", \"seconds\": 15, \"continue_previous\": false, \"references\": {\"images\": [], \"videos\": [], \"audios\": []}}, {\"title\": \"The door\", \"prompt\": \"Continue directly from the previous final motion for fifteen seconds. The explorer finishes lifting the hand, gently opens the door and takes one step inside. The camera follows without a cut. Soft hinges creak and outdoor birds remain audible. End as the explorer starts raising the lantern toward a dusty star map.\", \"seconds\": 15, \"continue_previous\": true, \"references\": {\"images\": [], \"videos\": [], \"audios\": []}}, {\"title\": \"Discovery\", \"prompt\": \"Continue directly from the previous final motion for fifteen seconds. The explorer finishes raising the lantern. Warm light reveals a hand-drawn star map on the wall. The camera moves slowly closer over the explorer's shoulder, then settles. The explorer holds still for the final three seconds. Keep the same dawn light through the glass and quiet forest ambience.\", \"seconds\": 15, \"continue_previous\": true, \"references\": {\"images\": [], \"videos\": [], \"audios\": []}}]}",
+        1,
+        ""
+      ],
+      "title": "ComfyUI-Minimax-H3-StoryStudio"
+    },
+    {
+      "id": 501,
+      "type": "MarkdownNote",
+      "pos": [
+        850,
+        120
+      ],
+      "size": [
+        420,
+        420
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "# StoryStudio\n\n1. Select your installed REF2VA, FL2VA, CLIP and VAE files.\n2. Click **Abrir Story Studio**.\n3. Edit the three example scenes. Add your own image, video and audio references in the scene editor.\n4. Click **Continuar sequência**.\n\nEach scene exports 15 seconds at 24 fps. The final frames and audio become context for the next scene.\n\nAudioRefine and the pageable RAM cache fix are bundled. Install the AIMixer Director for temporal context.\n\nExample starts at 512 × 512. Increase resolution after confirming your hardware budget."
+      ],
+      "title": "Start here"
+    }
+  ],
+  "links": [],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8,
+      "offset": [
+        50,
+        50
+      ]
+    }
+  },
+  "version": 0.4
+}

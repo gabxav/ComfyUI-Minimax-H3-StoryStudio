@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="title description">
+<title id="title">MiniMax H3 StoryStudio</title><desc id="description">Write scenes, add references, and continue your story with final-frame context and optional audio refinement.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#101e29"/><stop offset="1" stop-color="#122e31"/></linearGradient><linearGradient id="accent"><stop stop-color="#79ebc8"/><stop offset="1" stop-color="#b6f5e2"/></linearGradient><pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#c7ede4" stroke-opacity=".035"/></pattern></defs>
+<rect width="1280" height="420" rx="24" fill="url(#bg)"/><rect width="1280" height="420" rx="24" fill="url(#grid)"/>
+<g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+<rect x="52" y="43" width="250" height="30" rx="15" fill="#28483f"/><text x="69" y="63" fill="#a4efd8" font-size="13" font-weight="700" letter-spacing="1.5">COMFYUI · MINIMAX H3</text>
+<text x="49" y="145" fill="#f2f9f6" font-size="68" font-weight="700" letter-spacing="-2">StoryStudio</text>
+<text x="53" y="188" fill="#aac3c3" font-size="23">Your prompts. Your references. One continuing story.</text>
+<g transform="translate(53 241)">
+<rect width="260" height="116" rx="14" fill="#21383d" stroke="#47645f"/>
+<text x="21" y="32" fill="#8eb3ae" font-size="12" letter-spacing="2">SCENE 01</text><text x="21" y="66" fill="#f0f8f5" font-size="25" font-weight="600">Set the scene</text><text x="21" y="94" fill="#a2c8bd" font-size="14">15 s · images / video / audio</text>
+<path d="M274 59h66m-8-7 8 7-8 7" stroke="#81e5c1" stroke-width="2" fill="none"/><text x="269" y="90" fill="#a1b8b8" font-size="10">FINAL FRAMES</text>
+<rect x="360" width="260" height="116" rx="14" fill="#21383d" stroke="#47645f"/>
+<text x="381" y="32" fill="#8eb3ae" font-size="12" letter-spacing="2">SCENE 02</text><text x="381" y="66" fill="#f0f8f5" font-size="25" font-weight="600">Keep it moving</text><text x="381" y="94" fill="#a2c8bd" font-size="14">15 s · previous scene context</text>
+<path d="M634 59h66m-8-7 8 7-8 7" stroke="#81e5c1" stroke-width="2" fill="none"/><text x="629" y="90" fill="#a1b8b8" font-size="10">FINAL FRAMES</text>
+<rect x="720" width="260" height="116" rx="14" fill="#264d44" stroke="#72d3b3"/>
+<text x="741" y="32" fill="#b4e7d6" font-size="12" letter-spacing="2">SCENE 03 +</text><text x="741" y="66" fill="#f0f8f5" font-size="25" font-weight="600">Continue the story</text><text x="741" y="94" fill="#b4e7d6" font-size="14">15 s · save scenes + assembled film</text>
+</g>
+<text x="1225" y="373" text-anchor="end" fill="#87a8a3" font-size="11">REF2VA + FL2VA</text>
+</g></svg>

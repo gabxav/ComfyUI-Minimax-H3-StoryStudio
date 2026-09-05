@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "project_id": "story_studio_example",
+  "title": "The forest observatory",
+  "shared_prompt": "A continuous cinematic shot in a quiet forest observatory at dawn. One explorer wears a mustard-yellow field jacket and carries a small brass lantern. Maintain the same person, clothes, place, camera style and soft morning light across all scenes. Natural forest ambience; no music, captions or dialogue.",
+  "references": {
+    "images": [
+      {
+        "path": "character.png"
+      }
+    ],
+    "videos": [],
+    "audios": []
+  },
+  "seed": 240915,
+  "context_frames": 22,
+  "continue_audio": true,
+  "ref_image_size": "match",
+  "scenes": [
+    {
+      "title": "Arrival",
+      "prompt": "A fifteen-second tracking shot. The explorer walks slowly along a mossy path toward an old glass observatory. From 0 to 10 seconds the camera follows at shoulder height. From 10 to 15 seconds the explorer stops beside the door and starts lifting a hand toward its handle. Leaves move softly in the breeze; footsteps fade as the explorer stops.",
+      "seconds": 15,
+      "continue_previous": false,
+      "references": {
+        "images": [],
+        "videos": [],
+        "audios": []
+      }
+    },
+    {
+      "title": "The door",
+      "prompt": "Continue directly from the previous final motion for fifteen seconds. The explorer finishes lifting the hand, gently opens the door and takes one step inside. The camera follows without a cut. Soft hinges creak and outdoor birds remain audible. End as the explorer starts raising the lantern toward a dusty star map.",
+      "seconds": 15,
+      "continue_previous": true,
+      "references": {
+        "images": [],
+        "videos": [],
+        "audios": []
+      }
+    },
+    {
+      "title": "Discovery",
+      "prompt": "Continue directly from the previous final motion for fifteen seconds. The explorer finishes raising the lantern. Warm light reveals a hand-drawn star map on the wall. The camera moves slowly closer over the explorer's shoulder, then settles. The explorer holds still for the final three seconds. Keep the same dawn light through the glass and quiet forest ambience.",
+      "seconds": 15,
+      "continue_previous": true,
+      "references": {
+        "images": [],
+        "videos": [],
+        "audios": []
+      }
+    }
+  ]
+}

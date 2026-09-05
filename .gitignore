@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.playwright-mcp/
+input/
+output/
+*.safetensors
+*.ckpt
+*.pt
+# Local development captures and the user's private workflow stay off GitHub.
+reference/
+QA.md
+build_workflow.py
+workflows/minimax_*.json
