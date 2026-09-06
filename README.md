@@ -11,7 +11,7 @@
 ![MiniMax H3](https://img.shields.io/badge/MiniMax_H3-REF2VA_%2B_FL2VA-243d42?style=flat-square)
 ![AudioRefine bundled](https://img.shields.io/badge/AudioRefine-RAM_fix_included-8be0c0?style=flat-square)
 
-[Getting started](#getting-started) · [How continuity works](#how-continuity-works) · [AudioRefine fix](#audiorefine-with-the-ram-fix-included) · [Guia em português](docs/GUIA.pt-BR.md)
+[Getting started](#getting-started) · [How continuity works](#how-continuity-works) · [AudioRefine fix](#audiorefine-with-the-ram-fix-included) · [Quick start guide](docs/QUICKSTART.md)
 
 </div>
 
@@ -80,16 +80,16 @@ The example includes three editable forest-observatory scenes and starts at **51
 | Video VAE + audio VAE | `models/vae/` | Encode context and decode the generated streams. |
 | REF2VA Turbo LoRA | `models/loras/` | Optional Turbo sampling recipe; use steps appropriate to your LoRA/model. |
 
-Click **Abrir Story Studio** to open the editor. The interface currently uses Portuguese labels:
+Click **Open Story Studio** to open the editor. The interface uses English labels:
 
 | Button | Action |
 | --- | --- |
-| **Continuar sequência** | Generate from the first missing or outdated scene to the end, then assemble the film. |
-| **Gerar próxima cena** | Generate only the next pending scene. |
-| **Gerar / refazer selecionada** | Generate a new take of the selected scene. |
-| **Parar após esta cena** | Finish the current scene without queuing another. |
+| **Continue sequence** | Generate from the first missing or outdated scene to the end, then assemble the film. |
+| **Generate next scene** | Generate only the next pending scene. |
+| **Generate / redo selected** | Generate a new take of the selected scene. |
+| **Stop after this scene** | Finish the current scene without queuing another. |
 
-The sequence continues on the server after the editor closes. Save the workflow normally in ComfyUI to preserve your edited script. After a server restart, click **Continuar sequência** to resume. Use **Criar nova história a partir desta** for a separate output project.
+The sequence continues on the server after the editor closes. Save the workflow normally in ComfyUI to preserve your edited script. After a server restart, click **Continue sequence** to resume. Use **Create a new story from this one** for a separate output project.
 
 ![Scene prompts and media references](docs/assets/editor.png)
 
@@ -152,12 +152,14 @@ The bundled nodes have distinct internal IDs, so the original AudioRefine extens
 
 ```text
 ComfyUI/output/story_director/<project_id>/
-├── cena_001_<revision>.mp4   # exported scene with audio
-├── cena_001_<revision>.pt    # final frames and audio context
+├── scene_001_<revision>.mp4   # exported scene with audio
+├── scene_001_<revision>.pt    # final frames and audio context
 ├── manifest.json            # current takes, script and previous takes
 ├── job.json                 # sequence progress
-└── filme_<revision>.mp4     # assembled film
+└── film_<revision>.mp4     # assembled film
 ```
+
+New output filenames use English prefixes. Existing manifests continue to reference their original filenames; saved takes do not need to be renamed.
 
 Keep the `.pt` files if you want to continue from saved scenes. The assembled film trims per-clip AAC padding and resets timestamps before joining, avoiding accumulated padding at scene boundaries.
 
@@ -175,6 +177,10 @@ node --check web/story.js
 RAM-store tests need the ComfyUI Python environment with ComfyUI importable; ordinary unit tests can run without model weights. AAC assembly tests need FFmpeg and ffprobe. Outside those environments, the corresponding tests report skips.
 
 Not yet validated: hundreds of scenes, every media codec, all H3 quantizations or every ComfyUI release. Exact dialogue, identity and backgrounds remain model-dependent. Custom-node updates may require compatibility adjustments as native H3 APIs evolve.
+
+## Contributing
+
+Use English for all repository documentation, code, comments, identifiers, interface labels, messages, examples and screenshots. See [AGENTS.md](AGENTS.md). User-provided prompts and dialogue may use any language and must remain unchanged.
 
 ## Credits and license
 

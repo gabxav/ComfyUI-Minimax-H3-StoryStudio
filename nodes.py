@@ -23,7 +23,7 @@ class XavierH3Story:
     RETURN_NAMES = ('positive', 'latent', 'seed', 'scene')
     FUNCTION = 'prepare'
     CATEGORY = 'MiniMax H3/StoryStudio'
-    DESCRIPTION = 'Prompts, referências e continuação por cena. Abra o editor para organizar a história.'
+    DESCRIPTION = 'Per-scene prompts, references and continuation. Open the editor to organize the story.'
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
@@ -36,21 +36,21 @@ class XavierH3Story:
         story = parse_story(story_json)
         index = int(scene_index)-1
         if not 0 <= index < len(story['scenes']):
-            raise ValueError('Selecione uma cena existente.')
+            raise ValueError('Select an existing scene.')
         recipe = recipe_fingerprint or recipe_hash(prompt or {})
         keys, records = records_for(story, recipe)
         scene = story['scenes'][index]
         previous = records[index-1] if index else None
         context_n = story['context_frames'] if scene['continue_previous'] else 0
         if context_n and previous is None:
-            raise ValueError(f'Gere novamente a cena {index} antes de continuar a cena {index+1}. O contexto está ausente ou desatualizado.')
+            raise ValueError(f'Regenerate scene {index} before continuing scene {index+1}. The context is missing or outdated.')
         budget = frame_budget(scene['seconds'], context_n)
         refs = scene_media(story, index)
         images, videos, audios = load_references(refs)
         for mapping, prefix, value, limit in [(images, 'ref_image_', reference_image, 9), (videos, 'ref_video_', reference_video, 3), (audios, 'ref_audio_', reference_audio, 3)]:
             if value is not None:
                 if len(mapping) >= limit:
-                    raise ValueError('As referências conectadas excedem o limite de mídia do H3.')
+                    raise ValueError('The connected references exceed the H3 media limit.')
                 mapping[prefix+str(len(mapping))] = value
         text = '\n\n'.join(t.strip() for t in (story['shared_prompt'], scene['prompt']) if t.strip())
         out = MiniMaxH3ReferenceToVideo.execute(clip, vae, audio_vae, text, width, height,
@@ -66,7 +66,7 @@ class XavierH3Story:
                 continue_audio=story['continue_audio'], audio_context_length=context_n,
                 keep_existing_keyframes=False)
             if trim != context_n or previous_trim:
-                raise RuntimeError('O contexto não corresponde ao final exportado; geração interrompida para evitar uma emenda incorreta.')
+                raise RuntimeError('The context does not match the exported ending; generation stopped to prevent an incorrect transition.')
         metadata = {'project_id': story['project_id'], 'title': story['title'], 'index': index,
                     'scene_title': scene['title'], 'key': keys[index], 'recipe': recipe,
                     'parent_revision': previous['revision'] if context_n else None,
@@ -86,7 +86,7 @@ class XavierH3StoryOutput:
     FUNCTION = 'save'
     OUTPUT_NODE = True
     CATEGORY = 'MiniMax H3/StoryStudio'
-    DESCRIPTION = 'Salva o trecho final e o contexto para a cena seguinte, depois do refinamento de áudio.'
+    DESCRIPTION = 'Save the final clip and context for the next scene after audio refinement.'
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
@@ -98,19 +98,19 @@ class XavierH3StoryOutput:
         from comfy_api.latest import Types
         start, count = scene['trim_frames'], scene['visible_frames']
         if images.shape[0] < start+count:
-            raise ValueError(f'O decoder entregou {images.shape[0]} frames; são necessários {start+count}.')
+            raise ValueError(f'The decoder returned {images.shape[0]} frames; {start+count} are required.')
         images = images[start:start+count].contiguous()
         sr = int(audio['sample_rate'])
         a0, a1 = round(start/FPS*sr), round((start+count)/FPS*sr)
         if audio['waveform'].shape[-1] < a1:
-            raise ValueError('O áudio refinado ficou menor que a duração da cena. Não foi aplicado silêncio artificial.')
+            raise ValueError('The refined audio is shorter than the scene duration. No artificial silence was added.')
         audio = {'waveform': audio['waveform'][..., a0:a1].contiguous(), 'sample_rate': sr}
         if not torch.isfinite(images).all() or not torch.isfinite(audio['waveform']).all():
-            raise ValueError('A geração contém valores não finitos.')
+            raise ValueError('The generation contains non-finite values.')
         pid, index = scene['project_id'], scene['index']
         root = project_root(pid)
         revision = uuid.uuid4().hex[:12]
-        prefix = f'cena_{index+1:03d}_{revision}'
+        prefix = f'scene_{index+1:03d}_{revision}'
         file, ctx = root / f'{prefix}.mp4', root / f'{prefix}.pt'
         video = CreateVideo.execute(images, FPS, audio, 8, 'sRGB').result[0]
         video.save_to(str(file), format=Types.VideoContainer('mp4'), codec=Types.VideoCodec('h264'),
@@ -135,7 +135,7 @@ class XavierH3StoryOutput:
         manifest.pop('assembled', None)
         atomic_json(root/'manifest.json', manifest)
         ui = {'videos': [{'filename': file.name, 'subfolder': relative(root), 'type': 'output', 'format': 'video/mp4'}],
-              'text': [f'Cena {index+1}: {count/FPS:.3f}s · {relative(file)}']}
+              'text': [f'Scene {index+1}: {count/FPS:.3f}s · {relative(file)}']}
         return {'ui': ui, 'result': (images, audio, relative(file))}
 
 
@@ -177,7 +177,7 @@ class XavierH3StoryStudio:
     FUNCTION = 'generate'
     OUTPUT_NODE = True
     CATEGORY = 'MiniMax H3/StoryStudio'
-    DESCRIPTION = 'Studio completo: modelos, referências, cenas, contexto temporal e AudioRefine opcional. REF2VA gera o vídeo; FL2VA refina o áudio sem Turbo LoRA.'
+    DESCRIPTION = 'Complete studio: models, references, scenes, temporal context and optional AudioRefine. REF2VA generates video; FL2VA refines audio without Turbo LoRA.'
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
@@ -192,7 +192,7 @@ class XavierH3StoryStudio:
         parse_story(story_json)
         for needed in (['StoryStudioH3AudioRefineSampler'] if audio_refine else []) + (['StoryStudioH3FrozenVideoCache'] if audio_refine and audio_cache else []) + (['PathchSageAttentionKJ'] if attention=='auto' else []):
             if needed not in nodes.NODE_CLASS_MAPPINGS:
-                raise RuntimeError(f'Node necessário não instalado: {needed}')
+                raise RuntimeError(f'Required node is not installed: {needed}')
         g = GraphBuilder()
         clip = g.node('CLIPLoader', clip_name=clip_name, type='minimax', device='default')
         vae = g.node('VAELoader', vae_name=video_vae_name)

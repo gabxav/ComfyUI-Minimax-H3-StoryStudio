@@ -37,16 +37,16 @@ const button=(text,action,cls='')=>el('button',{text,onclick:action,class:cls,ty
 const widget=(node,name)=>node.widgets?.find(w=>w.name===name);
 const urlFor=(path,type='input')=>{const parts=path.replaceAll('\\','/').split('/');const filename=parts.pop();return api.apiURL('/view?'+new URLSearchParams({filename,subfolder:parts.join('/'),type}));};
 async function post(path,data){ const r=await api.fetchApi('/xavier-story/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); const d=await r.json();if(!r.ok)throw Error(d.error||r.statusText);return d; }
-function defaults(){return {version:1,project_id:'story_'+uid(),title:'Minha história',shared_prompt:'',references:{images:[],videos:[],audios:[]},context_frames:22,continue_audio:true,seed:101967611122254,ref_image_size:'max',scenes:[{title:'Cena 1',prompt:'',seconds:15,continue_previous:false,references:{images:[],videos:[],audios:[]}}]};}
+function defaults(){return {version:1,project_id:'story_'+uid(),title:'My story',shared_prompt:'',references:{images:[],videos:[],audios:[]},context_frames:22,continue_audio:true,seed:101967611122254,ref_image_size:'max',scenes:[{title:'Scene 1',prompt:'',seconds:15,continue_previous:false,references:{images:[],videos:[],audios:[]}}]};}
 function read(node){try{return JSON.parse(widget(node,'story_json').value)||defaults();}catch{return defaults();}}
 
 function openEditor(node){
   let story=read(node), selected=Math.max(0,Math.min(story.scenes.length-1,(widget(node,'scene_index')?.value||1)-1));
   let state=null, polling=false, closed=false, timer;
   const backdrop=el('div',{class:'xs-backdrop'}), modal=el('section',{class:'xs',role:'dialog','aria-modal':'true','aria-label':'Story Director'});
-  const status=el('div',{class:'xs-status',role:'status',text:'Pronto. Edite seus prompts e referências.'});
-  const list=el('div',{class:'xs-scenes'}), main=el('main'), saved=el('span',{class:'xs-save',text:'Salvo no node'});
-  function save(){widget(node,'story_json').value=JSON.stringify(story);widget(node,'scene_index').value=selected+1;node.title=node.type===STUDIO_TYPE?STUDIO_NAME:'Story · '+story.title;app.graph.setDirtyCanvas(true,true);saved.textContent='Salvo no node';}
+  const status=el('div',{class:'xs-status',role:'status',text:'Ready. Edit your prompts and references.'});
+  const list=el('div',{class:'xs-scenes'}), main=el('main'), saved=el('span',{class:'xs-save',text:'Saved to node'});
+  function save(){widget(node,'story_json').value=JSON.stringify(story);widget(node,'scene_index').value=selected+1;node.title=node.type===STUDIO_TYPE?STUDIO_NAME:'Story · '+story.title;app.graph.setDirtyCanvas(true,true);saved.textContent='Saved to node';}
   function message(text,error=false){status.textContent=text;status.style.color=error?'#ffb7ad':'#abc6ca';}
   async function graph(){save();const p=await app.graphToPrompt();return {prompt:p.output,workflow:p.workflow,client_id:api.clientId};}
   async function refresh(){
@@ -54,12 +54,12 @@ function openEditor(node){
     try {const g=await graph();state=await post('status',{story,prompt:g.prompt});const j=state.job; if(j.status!=='idle')message(j.message||j.status,j.status==='failed');renderList();renderPreview();}
     catch(e){message(e.message,true);}finally{polling=false;}
   }
-  async function run(mode){try{message('Validando o workflow…');await post('start',{...await graph(),mode,scene_index:selected+1});await refresh();}catch(e){message(e.message,true);}}
+  async function run(mode){try{message('Validating the workflow…');await post('start',{...await graph(),mode,scene_index:selected+1});await refresh();}catch(e){message(e.message,true);}}
   function renderList(){
     list.replaceChildren();
     story.scenes.forEach((s,i)=>{
       const valid=state?.scenes?.[i];const b=button('',()=>{selected=i;save();render();},'xs-scene'+(selected===i?' active':''));
-      b.append(el('strong',{text:`${String(i+1).padStart(2,'0')} · ${s.title}`}),el('small',{text:`${s.seconds}s · ${valid?'gerada':'a gerar'}`}));list.append(b);
+      b.append(el('strong',{text:`${String(i+1).padStart(2,'0')} · ${s.title}`}),el('small',{text:`${s.seconds}s · ${valid?'generated':'pending'}`}));list.append(b);
     });
   }
   async function upload(kind,refs){
@@ -67,65 +67,65 @@ function openEditor(node){
     input.addEventListener('change',async()=>{try{
       const limits={images:9,videos:3,audios:3};
       for(const f of input.files){
-        if(refs[kind].length>=limits[kind])throw Error(`Limite de ${limits[kind]} arquivos neste grupo.`);
-        message('Enviando '+f.name+'…');const form=new FormData();form.append('image',f);form.append('type','input');form.append('subfolder','story_director/'+story.project_id);
-        const response=await api.fetchApi('/upload/image',{method:'POST',body:form});if(!response.ok)throw Error('Falha no envio de '+f.name);
+        if(refs[kind].length>=limits[kind])throw Error(`Limit of ${limits[kind]} files in this group.`);
+        message('Uploading '+f.name+'…');const form=new FormData();form.append('image',f);form.append('type','input');form.append('subfolder','story_director/'+story.project_id);
+        const response=await api.fetchApi('/upload/image',{method:'POST',body:form});if(!response.ok)throw Error('Upload failed for '+f.name);
         const d=await response.json(),path=(d.subfolder?d.subfolder+'/':'')+d.name;
         refs[kind].push(kind==='images'?{path}:{path,start:0,seconds:15});
       }
-      save();render();message('Referências adicionadas.');
+      save();render();message('References added.');
     }catch(e){message(e.message,true);}});input.click();
   }
   function mediaPanel(refs,shared=false){
     const row=el('div',{class:'xs-media'});
-    for(const [kind,label,tag] of [['images','Imagens','Picture'],['videos','Vídeos · movimento','Video'],['audios','Áudios · voz','Audio']]){
+    for(const [kind,label,tag] of [['images','Images','Picture'],['videos','Videos · motion','Video'],['audios','Audio · voice','Audio']]){
       refs[kind]??=[];const col=el('div',{class:'xs-media-col'},[el('h4',{text:label})]);
       refs[kind].forEach((m,i)=>{
         if(typeof m==='string')refs[kind][i]=m={path:m};
         const ordinal=i+1+(shared?0:(story.references[kind]?.length||0));
-        const preview=kind==='images'?el('img',{src:urlFor(m.path),alt:'Referência '+ordinal}):el(kind==='videos'?'video':'audio',{src:urlFor(m.path),controls:true,preload:'metadata'});
+        const preview=kind==='images'?el('img',{src:urlFor(m.path),alt:'Reference '+ordinal}):el(kind==='videos'?'video':'audio',{src:urlFor(m.path),controls:true,preload:'metadata'});
         const asset=el('div',{class:'xs-asset'},[preview,el('div',{class:'xs-asset-name',text:`<${tag} ${ordinal}> · ${m.path.split('/').pop()}`})]);
         if(kind!=='images'){
           const times=el('div',{class:'xs-times'});
-          for(const [key,name,min] of [['start','Início (s)',0],['seconds','Trecho (s)',.2]]){
+          for(const [key,name,min] of [['start','Start (s)',0],['seconds','Length (s)',.2]]){
             const field=el('input',{type:'number',value:m[key]??(key==='start'?0:15),min,step:.1,...(key==='seconds'?{max:15}:{}),'aria-label':`${name} ${tag} ${ordinal}`,onchange:e=>{m[key]=Number(e.target.value);save();}});
             times.append(el('div',{class:'xs-grow'},[el('label',{text:name}),field]));
           }asset.append(times);
         }
-        asset.append(button('Remover',()=>{refs[kind].splice(i,1);save();render();},'xs-danger'));col.append(asset);
+        asset.append(button('Remove',()=>{refs[kind].splice(i,1);save();render();},'xs-danger'));col.append(asset);
       });
-      col.append(button('+ Adicionar',()=>upload(kind,refs)));row.append(col);
+      col.append(button('+ Add',()=>upload(kind,refs)));row.append(col);
     }return row;
   }
   let previewBox;
   function renderPreview(){
     if(!previewBox)return; const record=state?.scenes?.[selected],film=state?.assembled?.video;
     const key=(record?.revision||'')+'|'+(film||'');if(previewBox.dataset.key===key)return;previewBox.dataset.key=key;previewBox.replaceChildren();
-    if(record){previewBox.append(el('label',{text:'Resultado da cena'}),el('video',{src:urlFor(record.video,'output'),controls:true,preload:'metadata'}),el('a',{href:urlFor(record.video,'output'),target:'_blank',text:'Abrir vídeo da cena'}));}
-    if(film)previewBox.append(el('p',{},[el('a',{href:urlFor(film,'output'),target:'_blank',text:'Abrir filme completo'})]));
+    if(record){previewBox.append(el('label',{text:'Scene result'}),el('video',{src:urlFor(record.video,'output'),controls:true,preload:'metadata'}),el('a',{href:urlFor(record.video,'output'),target:'_blank',text:'Open scene video'}));}
+    if(film)previewBox.append(el('p',{},[el('a',{href:urlFor(film,'output'),target:'_blank',text:'Open complete film'})]));
   }
   function render(){
     const openDetails=Array.from(main.querySelectorAll('details')).map(d=>d.open);renderList();main.replaceChildren();const scene=story.scenes[selected];
-    const title=el('input',{value:scene.title,'aria-label':'Nome da cena',oninput:e=>{scene.title=e.target.value;save();renderList();}});
-    const seconds=el('input',{type:'number',value:scene.seconds,min:1,max:15,step:1,'aria-label':'Duração em segundos',onchange:e=>{scene.seconds=Number(e.target.value);save();renderList();}});
-    main.append(el('div',{class:'xs-row'},[el('div',{class:'xs-grow'},[el('label',{text:'Cena selecionada'}),title]),el('div',{class:'xs-duration'},[el('label',{text:'Segundos'}),seconds])]));
-    if(selected>0)main.append(el('label',{class:'xs-check'},[el('input',{type:'checkbox',checked:scene.continue_previous!==false,onchange:e=>{scene.continue_previous=e.target.checked;save();}}),document.createTextNode('Continuar do final da cena anterior')]));
-    main.append(el('p',{class:'xs-hint',text:'Escreva o que acontece nesta cena. Use <Picture 1>, <Video 1> e <Audio 1> conforme as referências abaixo.'}),el('textarea',{value:scene.prompt,placeholder:'Descreva ação, câmera e falas desta cena…','aria-label':'Prompt da cena',oninput:e=>{scene.prompt=e.target.value;save();}}));
-    const common=el('details',{},[el('summary',{text:'Referências e instruções comuns · todas as cenas'}),el('textarea',{class:'xs-shared-prompt',value:story.shared_prompt,placeholder:'Identidade dos personagens, voz, cenário e estilo…','aria-label':'Prompt comum',oninput:e=>{story.shared_prompt=e.target.value;save();}}),el('p',{class:'xs-hint',text:'As referências comuns mantêm a numeração em todas as cenas. Vídeos fornecem imagem/movimento; adicione sua trilha na coluna Áudios se quiser usá-la como voz.'}),mediaPanel(story.references,true)]);
-    const extras=el('details',{},[el('summary',{text:'Referências extras · somente esta cena'}),mediaPanel(scene.references??={images:[],videos:[],audios:[]})]);
-    const settings=el('details',{},[el('summary',{text:'Continuidade e projeto'})]);
-    const context=el('select',{'aria-label':'Frames de continuidade',onchange:e=>{story.context_frames=Number(e.target.value);save();}},[5,22,39,56].map(n=>el('option',{value:n,text:`${n} frames · ${(n/24).toFixed(2)}s`,selected:n===story.context_frames})));
-    const seed=el('input',{type:'number',min:0,max:Number.MAX_SAFE_INTEGER,value:story.seed,'aria-label':'Seed inicial',onchange:e=>{story.seed=Number(e.target.value);save();}});
-    const quality=el('select',{'aria-label':'Tamanho das referências',onchange:e=>{story.ref_image_size=e.target.value;save();}},[['max','Original (max)'],['match','Limitar à resolução da geração (match)']].map(([v,t])=>el('option',{value:v,text:t,selected:v===story.ref_image_size})));
-    settings.append(el('label',{text:'Frames finais usados na próxima cena'}),context,el('p',{class:'xs-hint',text:'O trecho de contexto é removido da saída. Cada vídeo terá a duração definida acima.'}),el('label',{class:'xs-check'},[el('input',{type:'checkbox',checked:story.continue_audio,onchange:e=>{story.continue_audio=e.target.checked;save();}}),document.createTextNode('Continuar também o áudio ambiente e a voz')]),el('label',{text:'Seed inicial'}),seed,el('label',{text:'Referências de imagem'}),quality,el('p',{class:'xs-hint',text:'Projeto: '+story.project_id}),button('Criar nova história a partir desta',()=>{story.project_id='story_'+uid();state=null;save();render();message('Nova história criada. Os resultados anteriores continuam salvos.');}));
+    const title=el('input',{value:scene.title,'aria-label':'Scene name',oninput:e=>{scene.title=e.target.value;save();renderList();}});
+    const seconds=el('input',{type:'number',value:scene.seconds,min:1,max:15,step:1,'aria-label':'Duration in seconds',onchange:e=>{scene.seconds=Number(e.target.value);save();renderList();}});
+    main.append(el('div',{class:'xs-row'},[el('div',{class:'xs-grow'},[el('label',{text:'Selected scene'}),title]),el('div',{class:'xs-duration'},[el('label',{text:'Seconds'}),seconds])]));
+    if(selected>0)main.append(el('label',{class:'xs-check'},[el('input',{type:'checkbox',checked:scene.continue_previous!==false,onchange:e=>{scene.continue_previous=e.target.checked;save();}}),document.createTextNode('Continue from the end of the previous scene')]));
+    main.append(el('p',{class:'xs-hint',text:'Write what happens in this scene. Use <Picture 1>, <Video 1> and <Audio 1> to match the references below.'}),el('textarea',{value:scene.prompt,placeholder:'Describe the action, camera and dialogue for this scene…','aria-label':'Scene prompt',oninput:e=>{scene.prompt=e.target.value;save();}}));
+    const common=el('details',{},[el('summary',{text:'Shared references and instructions · all scenes'}),el('textarea',{class:'xs-shared-prompt',value:story.shared_prompt,placeholder:'Character identity, voice, setting and style…','aria-label':'Shared prompt',oninput:e=>{story.shared_prompt=e.target.value;save();}}),el('p',{class:'xs-hint',text:'Shared references keep the same numbering in every scene. Videos provide visuals and motion; add their soundtrack to the Audio column to use it as a voice reference.'}),mediaPanel(story.references,true)]);
+    const extras=el('details',{},[el('summary',{text:'Extra references · this scene only'}),mediaPanel(scene.references??={images:[],videos:[],audios:[]})]);
+    const settings=el('details',{},[el('summary',{text:'Continuity and project'})]);
+    const context=el('select',{'aria-label':'Context frames',onchange:e=>{story.context_frames=Number(e.target.value);save();}},[5,22,39,56].map(n=>el('option',{value:n,text:`${n} frames · ${(n/24).toFixed(2)}s`,selected:n===story.context_frames})));
+    const seed=el('input',{type:'number',min:0,max:Number.MAX_SAFE_INTEGER,value:story.seed,'aria-label':'Initial seed',onchange:e=>{story.seed=Number(e.target.value);save();}});
+    const quality=el('select',{'aria-label':'Reference size',onchange:e=>{story.ref_image_size=e.target.value;save();}},[['max','Original (max)'],['match','Limit to generation resolution (match)']].map(([v,t])=>el('option',{value:v,text:t,selected:v===story.ref_image_size})));
+    settings.append(el('label',{text:'Final frames used in the next scene'}),context,el('p',{class:'xs-hint',text:'The context segment is removed from the output. Each video will have the duration set above.'}),el('label',{class:'xs-check'},[el('input',{type:'checkbox',checked:story.continue_audio,onchange:e=>{story.continue_audio=e.target.checked;save();}}),document.createTextNode('Also continue ambient audio and voice')]),el('label',{text:'Initial seed'}),seed,el('label',{text:'Image references'}),quality,el('p',{class:'xs-hint',text:'Project: '+story.project_id}),button('Create a new story from this one',()=>{story.project_id='story_'+uid();state=null;save();render();message('New story created. Previous results remain saved.');}));
     [common,extras,settings].forEach((d,i)=>{d.open=!!openDetails[i];});previewBox=el('div',{class:'xs-preview'});main.append(common,extras,settings,previewBox);
-    if(story.scenes.length>1)main.append(el('p',{},[button('Excluir esta cena do roteiro',()=>{story.scenes.splice(selected,1);selected=Math.max(0,selected-1);story.scenes[0].continue_previous=false;state=null;save();render();},'xs-danger')]));
+    if(story.scenes.length>1)main.append(el('p',{},[button('Delete this scene from the script',()=>{story.scenes.splice(selected,1);selected=Math.max(0,selected-1);story.scenes[0].continue_previous=false;state=null;save();render();},'xs-danger')]));
     renderPreview();
   }
   function close(){closed=true;clearInterval(timer);save();backdrop.remove();}
-  const name=el('input',{value:story.title,'aria-label':'Nome da história',oninput:e=>{story.title=e.target.value;save();}});
-  const aside=el('aside',{},[el('label',{text:'História'}),name,list,button('+ Adicionar cena',()=>{story.scenes.push({title:'Cena '+(story.scenes.length+1),prompt:'',seconds:15,continue_previous:true,references:{images:[],videos:[],audios:[]}});selected=story.scenes.length-1;save();render();})]);
-  modal.append(el('header',{},[el('div',{},[el('h2',{text:'Story Studio'}),el('div',{class:'xs-sub',text:'MiniMax H3 · prompts, referências e continuidade'})]),saved,button('Fechar',close,'xs-close')]),el('div',{class:'xs-body'},[aside,main]),el('footer',{},[el('div',{class:'xs-actions'},[button('Continuar sequência',()=>run('continue'),'xs-primary'),button('Gerar próxima cena',()=>run('next')),button('Gerar / refazer selecionada',()=>run('selected')),button('Parar após esta cena',async()=>{try{save();await post('pause',{project_id:story.project_id});message('A sequência vai parar após a cena em andamento.');}catch(e){message(e.message,true);}})]),status]));
+  const name=el('input',{value:story.title,'aria-label':'Story name',oninput:e=>{story.title=e.target.value;save();}});
+  const aside=el('aside',{},[el('label',{text:'Story'}),name,list,button('+ Add scene',()=>{story.scenes.push({title:'Scene '+(story.scenes.length+1),prompt:'',seconds:15,continue_previous:true,references:{images:[],videos:[],audios:[]}});selected=story.scenes.length-1;save();render();})]);
+  modal.append(el('header',{},[el('div',{},[el('h2',{text:'Story Studio'}),el('div',{class:'xs-sub',text:'MiniMax H3 · prompts, references and continuity'})]),saved,button('Close',close,'xs-close')]),el('div',{class:'xs-body'},[aside,main]),el('footer',{},[el('div',{class:'xs-actions'},[button('Continue sequence',()=>run('continue'),'xs-primary'),button('Generate next scene',()=>run('next')),button('Generate / redo selected',()=>run('selected')),button('Stop after this scene',async()=>{try{save();await post('pause',{project_id:story.project_id});message('The sequence will stop after the current scene.');}catch(e){message(e.message,true);}})]),status]));
   backdrop.append(modal);document.body.append(backdrop);render();refresh();timer=setInterval(refresh,5000);
 }
 
@@ -151,7 +151,7 @@ app.registerExtension({
         const w=widget(this,name);if(!w)continue;w.type='hidden';w.computeSize=()=>[0,-4];if(w.inputEl)w.inputEl.classList.add('xs-hidden');if(w.element)w.element.classList.add('xs-hidden');
       }
       if(!widget(this,'story_json').value)widget(this,'story_json').value=JSON.stringify(defaults());
-      this.addWidget('button','Abrir Story Studio',null,()=>openEditor(this),{serialize:false});
+      this.addWidget('button','Open Story Studio',null,()=>openEditor(this),{serialize:false});
       if(nodeData.name===STUDIO_TYPE)this.title=STUDIO_NAME;
       this.color='#24413f';this.bgcolor='#172a2d';this.size=nodeData.name===STUDIO_TYPE?[520,670]:[380,220];
     };

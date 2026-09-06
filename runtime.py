@@ -26,7 +26,7 @@ def input_file(name):
     root = Path(folder_paths.get_input_directory()).resolve()
     p = (root / media_path(name)).resolve()
     if not p.is_relative_to(root) or not p.is_file():
-        raise ValueError(f'Referência não encontrada em input/: {name}')
+        raise ValueError(f'Reference not found in input/: {name}')
     return p
 
 
@@ -34,7 +34,7 @@ def output_file(name):
     root = output_root()
     p = (root / media_path(name)).resolve()
     if not p.is_relative_to(root):
-        raise ValueError('Caminho de saída inválido.')
+        raise ValueError('Invalid output path.')
     return p
 
 
@@ -91,7 +91,7 @@ def motion_module():
             package.__path__ = [str(d)]
             sys.modules[package.__name__] = package
             return importlib.import_module(package.__name__ + '.h3_motion_context')
-    raise RuntimeError('Instale o ComfyUI_MiniMaxH3_Director (AIMixer): ele fornece o contexto temporal H3.')
+    raise RuntimeError('Install ComfyUI_MiniMaxH3_Director (AIMixer): it provides H3 temporal context.')
 
 
 def load_audio(item):
@@ -102,10 +102,10 @@ def load_audio(item):
                              '-t', str(item['seconds']), '-vn', '-ac', '2', '-ar', '32000', '-f', 'f32le', 'pipe:1'],
                             capture_output=True, timeout=120)
     if result.returncode:
-        raise ValueError(f'Não foi possível ler o áudio {item["path"]}: {result.stderr.decode(errors="replace")[-500:]}')
+        raise ValueError(f'Could not read audio {item["path"]}: {result.stderr.decode(errors="replace")[-500:]}')
     data = np.frombuffer(result.stdout, dtype=np.float32).copy()
     if data.size < 12800:
-        raise ValueError(f'Referência de áudio muito curta ou vazia: {item["path"]}')
+        raise ValueError(f'Audio reference is too short or empty: {item["path"]}')
     return {'waveform': torch.from_numpy(data.reshape(-1, 2).T).unsqueeze(0), 'sample_rate': 32000}
 
 
@@ -118,7 +118,7 @@ def load_video(item):
     target = start
     with av.open(str(input_file(item['path']))) as container:
         if not container.streams.video:
-            raise ValueError(f'Arquivo sem vídeo: {item["path"]}')
+            raise ValueError(f'File contains no video: {item["path"]}')
         stream = container.streams.video[0]
         origin = float((stream.start_time or 0) * stream.time_base)
         if start:
@@ -136,7 +136,7 @@ def load_video(item):
                 images.append(rgb)
                 target += 1/24
         if len(images) < 5:
-            raise ValueError(f'Referência de vídeo muito curta no intervalo escolhido: {item["path"]}')
+            raise ValueError(f'Video reference is too short in the selected interval: {item["path"]}')
     return torch.from_numpy(np.stack(images)).float().div_(255)
 
 
@@ -151,8 +151,8 @@ def load_references(refs):
 def assemble(pid, records):
     root = project_root(pid)
     if not records or any(r is None for r in records):
-        raise ValueError('Gere todas as cenas atuais antes de montar o filme.')
-    final = root / f'filme_{uuid.uuid4().hex[:12]}.mp4'
+        raise ValueError('Generate all current scenes before assembling the film.')
+    final = root / f'film_{uuid.uuid4().hex[:12]}.mp4'
     cmd = ['ffmpeg', '-v', 'error', '-nostdin']
     filters, labels = [], []
     for i, record in enumerate(records):

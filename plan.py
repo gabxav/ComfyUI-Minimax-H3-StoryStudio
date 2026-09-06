@@ -17,7 +17,7 @@ def digest(value):
 
 def project_id(value):
     if not isinstance(value, str) or not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}', value):
-        raise ValueError('O identificador da história deve usar apenas letras, números, _ e -.')
+        raise ValueError('The story ID must contain only letters, numbers, underscores and hyphens.')
     return value
 
 
@@ -25,13 +25,13 @@ def media_path(value):
     value = str(value).replace('\\', '/')
     p = Path(value)
     if not value or p.is_absolute() or '..' in p.parts or '\x00' in value:
-        raise ValueError('Referência inválida: use um arquivo dentro de input/.')
+        raise ValueError('Invalid reference: use a file inside input/.')
     return value
 
 
 def media_list(value, kind):
     if not isinstance(value, list):
-        raise ValueError(f'{kind}: lista de referências inválida.')
+        raise ValueError(f'{kind}: invalid reference list.')
     out = []
     for item in value:
         item = {'path': item} if isinstance(item, str) else dict(item)
@@ -40,7 +40,7 @@ def media_list(value, kind):
             item['start'] = float(item.get('start', 0))
             item['seconds'] = float(item.get('seconds', 15))
             if not math.isfinite(item['start']) or item['start'] < 0 or not math.isfinite(item['seconds']) or not 0.2 <= item['seconds'] <= 15:
-                raise ValueError('Cada referência de vídeo/áudio deve selecionar até 15 segundos, com início >= 0.')
+                raise ValueError('Each video/audio reference must select up to 15 seconds, starting at or after 0 seconds.')
         # Video soundtracks are deliberately excluded: standalone Audio N is stable.
         out.append(item)
     return out
@@ -49,41 +49,41 @@ def media_list(value, kind):
 def parse_story(raw):
     d = json.loads(raw) if isinstance(raw, str) else copy.deepcopy(raw)
     if not isinstance(d, dict) or d.get('version', 1) != VERSION:
-        raise ValueError('Formato da história não suportado.')
+        raise ValueError('Unsupported story format.')
     d['version'] = VERSION
     d['project_id'] = project_id(d.get('project_id', ''))
-    d['title'] = str(d.get('title', 'Minha história'))[:160]
+    d['title'] = str(d.get('title', 'My story'))[:160]
     d['shared_prompt'] = str(d.get('shared_prompt', ''))
     d['context_frames'] = int(d.get('context_frames', 22))
     if d['context_frames'] not in (5, 22, 39, 56):
-        raise ValueError('Contexto deve ser 5, 22, 39 ou 56 frames.')
+        raise ValueError('Context must be 5, 22, 39 or 56 frames.')
     d['continue_audio'] = bool(d.get('continue_audio', True))
     d['seed'] = int(d.get('seed', 101967611122254))
     if not 0 <= d['seed'] < 2**53:
-        raise ValueError('Seed fora do intervalo permitido (0 a 2^53-1).')
+        raise ValueError('Seed is outside the allowed range (0 to 2^53-1).')
     d['ref_image_size'] = d.get('ref_image_size', 'max')
     if d['ref_image_size'] not in ('match', 'max'):
-        raise ValueError('Tamanho de referência inválido.')
+        raise ValueError('Invalid reference size.')
     shared = d.setdefault('references', {})
     for kind in KINDS:
         shared[kind] = media_list(shared.get(kind, []), kind)
     if not isinstance(d.get('scenes'), list) or not 1 <= len(d['scenes']) <= 100:
-        raise ValueError('A história deve ter de 1 a 100 cenas.')
+        raise ValueError('A story must contain 1 to 100 scenes.')
     for i, s in enumerate(d['scenes']):
-        s['title'] = str(s.get('title', f'Cena {i+1}'))[:160]
+        s['title'] = str(s.get('title', f'Scene {i+1}'))[:160]
         s['prompt'] = str(s.get('prompt', ''))
         if not s['prompt'].strip():
-            raise ValueError(f'Escreva o prompt da cena {i+1}.')
+            raise ValueError(f'Enter a prompt for scene {i+1}.')
         duration = float(s.get('seconds', 15))
         if not math.isfinite(duration) or not 1 <= duration <= 15:
-            raise ValueError('A duração de cada cena deve estar entre 1 e 15 segundos.')
+            raise ValueError('Each scene must last between 1 and 15 seconds.')
         s['seconds'] = duration
         s['continue_previous'] = bool(s.get('continue_previous', i > 0)) and i > 0
         refs = s.setdefault('references', {})
         for kind, limit in KINDS.items():
             refs[kind] = media_list(refs.get(kind, []), kind)
             if len(shared[kind]) + len(refs[kind]) > limit:
-                raise ValueError(f'Cena {i+1}: limite de {limit} referências de {kind}, incluindo as comuns.')
+                raise ValueError(f'Scene {i+1}: limit of {limit} {kind} references, including shared references.')
     return d
 
 

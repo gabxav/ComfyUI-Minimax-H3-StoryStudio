@@ -80,7 +80,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "# StoryStudio\n\n1. Select your installed REF2VA, FL2VA, CLIP and VAE files.\n2. Click **Abrir Story Studio**.\n3. Edit the three example scenes. Add your own image, video and audio references in the scene editor.\n4. Click **Continuar sequência**.\n\nEach scene exports 15 seconds at 24 fps. The final frames and audio become context for the next scene.\n\nAudioRefine and the pageable RAM cache fix are bundled. Install the AIMixer Director for temporal context.\n\nExample starts at 512 × 512. Increase resolution after confirming your hardware budget."
+        "# StoryStudio\n\n1. Select your installed REF2VA, FL2VA, CLIP and VAE files.\n2. Click **Open Story Studio**.\n3. Edit the three example scenes. Add your own image, video and audio references in the scene editor.\n4. Click **Continue sequence**.\n\nEach scene exports 15 seconds at 24 fps. The final frames and audio become context for the next scene.\n\nAudioRefine and the pageable RAM cache fix are bundled. Install the AIMixer Director for temporal context.\n\nExample starts at 512 × 512. Increase resolution after confirming your hardware budget."
       ],
       "title": "Start here"
     }
