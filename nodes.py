@@ -162,7 +162,7 @@ class XavierH3StoryStudio:
             'steps': ('INT', {'default': 8, 'min': 1, 'max': 100}),
             'sampler_name': (comfy.samplers.KSampler.SAMPLERS, {'default': 'euler'}),
             'scheduler': (comfy.samplers.KSampler.SCHEDULERS, {'default': 'simple'}),
-            'attention': (['auto', 'disabled'], {'default': 'auto'}),
+            'attention': (['auto', 'disabled'], {'default': 'auto', 'tooltip': 'Auto uses KJNodes SageAttention when installed; otherwise it uses native ComfyUI attention. Disabled always uses native attention.'}),
             'audio_refine': ('BOOLEAN', {'default': True}),
             'audio_steps': ('INT', {'default': 6, 'min': 1, 'max': 100}),
             'audio_denoise': ('FLOAT', {'default': 0.5, 'min': 0.01, 'max': 1, 'step': 0.01}),
@@ -190,9 +190,10 @@ class XavierH3StoryStudio:
         import nodes
         from comfy_execution.graph_utils import GraphBuilder
         parse_story(story_json)
-        for needed in (['StoryStudioH3AudioRefineSampler'] if audio_refine else []) + (['StoryStudioH3FrozenVideoCache'] if audio_refine and audio_cache else []) + (['PathchSageAttentionKJ'] if attention=='auto' else []):
+        for needed in (['StoryStudioH3AudioRefineSampler'] if audio_refine else []) + (['StoryStudioH3FrozenVideoCache'] if audio_refine and audio_cache else []):
             if needed not in nodes.NODE_CLASS_MAPPINGS:
                 raise RuntimeError(f'Required node is not installed: {needed}')
+        use_sage_attention = attention == 'auto' and 'PathchSageAttentionKJ' in nodes.NODE_CLASS_MAPPINGS
         g = GraphBuilder()
         clip = g.node('CLIPLoader', clip_name=clip_name, type='minimax', device='default')
         vae = g.node('VAELoader', vae_name=video_vae_name)
@@ -203,7 +204,7 @@ class XavierH3StoryStudio:
         if turbo_lora != 'none':
             model = g.node('LoraLoaderModelOnly', model=model.out(0), lora_name=turbo_lora, strength_model=1.0)
         model = g.node('MiniMaxH3SigmaShift', model=model.out(0), shift_video=12.0, shift_audio=3.0)
-        if attention == 'auto':
+        if use_sage_attention:
             model = g.node('PathchSageAttentionKJ', model=model.out(0), sage_attention='auto', allow_compile=False)
         noise = g.node('RandomNoise', noise_seed=plan.out(2))
         guider = g.node('BasicGuider', model=model.out(0), conditioning=plan.out(0))
@@ -213,7 +214,7 @@ class XavierH3StoryStudio:
         if audio_refine:
             refined_model = g.node('UNETLoader', unet_name=fl2va_model, weight_dtype='default')
             refined_model = g.node('MiniMaxH3SigmaShift', model=refined_model.out(0), shift_video=12.0, shift_audio=3.0)
-            if attention == 'auto':
+            if use_sage_attention:
                 refined_model = g.node('PathchSageAttentionKJ', model=refined_model.out(0), sage_attention='auto', allow_compile=False)
             if audio_cache:
                 refined_model = g.node('StoryStudioH3FrozenVideoCache', model=refined_model.out(0), enabled=True, cache_contents='hidden',

@@ -13,7 +13,7 @@ NODE_DISPLAY_NAME_MAPPINGS.update({
     'StoryStudioH3FrozenVideoCache': 'StoryStudio · Frozen Video Cache (RAM fix)',
 })
 WEB_DIRECTORY = './web'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 # Importing in a standalone validator must not create a PromptServer.
 from server import PromptServer

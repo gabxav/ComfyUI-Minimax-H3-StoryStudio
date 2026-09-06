@@ -1,10 +1,7 @@
-import importlib
 import json
 import os
 from pathlib import Path
 import subprocess
-import sys
-import types
 import uuid
 
 from .plan import chain_keys, media_path, project_id, valid_records
@@ -78,20 +75,9 @@ def records_for(story, recipe):
 
 
 def motion_module():
-    # Reuse the already imported Director helper, including its patch state.
-    suffix = '/ComfyUI_MiniMaxH3_Director/director/h3_motion_context.py'
-    for module in list(sys.modules.values()):
-        if str(getattr(module, '__file__', '')).replace('\\', '/').endswith(suffix):
-            return module
-    import folder_paths
-    for base in folder_paths.get_folder_paths('custom_nodes'):
-        d = Path(base) / 'ComfyUI_MiniMaxH3_Director' / 'director'
-        if (d / 'h3_motion_context.py').is_file():
-            package = types.ModuleType('_xavier_story_motion')
-            package.__path__ = [str(d)]
-            sys.modules[package.__name__] = package
-            return importlib.import_module(package.__name__ + '.h3_motion_context')
-    raise RuntimeError('Install ComfyUI_MiniMaxH3_Director (AIMixer): it provides H3 temporal context.')
+    # Always use our pinned copy, without loading another custom-node package.
+    from .vendor.director import h3_motion_context
+    return h3_motion_context
 
 
 def load_audio(item):

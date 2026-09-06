@@ -42,11 +42,10 @@ The main node has **no external `reference_image`, `reference_video` or `referen
 
 - A recent **ComfyUI build with native MiniMax H3 support**, including `MiniMaxH3ReferenceToVideo`, packed audiovisual latents and dynamic graph expansion.
 - Compatible **MiniMax H3 model weights**, text encoder and video/audio VAEs. The weights are not included.
-- [AIMixer/ComfyUI_MiniMaxH3_Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director), which supplies the temporal motion-context helper.
 - **FFmpeg and ffprobe** available on the ComfyUI process's `PATH`; PyAV, NumPy and aiohttp in its Python environment.
-- Optional: [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes) and working SageAttention for `attention=auto`. Choose `disabled` to use standard attention.
+- Optional: [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes) with working SageAttention. `attention=auto` uses it when installed and otherwise falls back to native ComfyUI attention. `disabled` always uses native attention.
 
-**AudioRefine is already bundled.** Installing its separate custom-node package is not required for StoryStudio.
+**No other custom-node package is required.** AudioRefine and the Director temporal-context helpers are bundled. You do not need to install Director, AudioRefine or KJNodes separately.
 
 ### 2. Install
 
@@ -123,11 +122,17 @@ flowchart LR
     F --> I[Assembled film]
 ```
 
-The default carries **22 frames at 24 fps**, about **0.92 seconds**, plus the corresponding audio tail. The Director helper encodes those actual final frames as temporal conditioning. Your original media references remain part of the conditioning.
+The default carries **22 frames at 24 fps**, about **0.92 seconds**, plus the corresponding audio tail. The bundled temporal helper encodes those actual final frames as temporal conditioning. Your original media references remain part of the conditioning.
 
 After generation, StoryStudio removes the context overlap and the model's extra frames. A 15-second scene exports **360 frames at 24 fps**. The current H3 frame grid is `17k + 5`: internally this uses 362 frames for the first scene and 396 with the default 22-frame continuation context. This internal window exceeds approximately 15 seconds; quality depends on the model and context length.
 
 Changing a scene's prompt, references or generation settings marks affected results as outdated. Regenerating a take also invalidates later scenes that depend on it. Previous files remain available. Renaming a story or scene does not itself invalidate a render.
+
+## Bundled temporal context
+
+StoryStudio includes the three temporal helper modules it uses from [AIMixer/ComfyUI_MiniMaxH3_Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director), pinned to commit `b8f721c`. It imports this local copy directly, without discovering or importing a separate Director installation. Only these helpers are bundled; the Director UI and other nodes are not loaded.
+
+The original Apache-2.0 license and attribution are included. The helper preserves the original patch markers to avoid wrapping the same H3 layout and payload functions twice if the matching Director implementation is already active. The upstream checks still reject incompatible third-party context patches. See [source provenance and hashes](THIRD_PARTY_NOTICES.md).
 
 ## AudioRefine with the RAM fix included
 
@@ -167,6 +172,8 @@ Keep the `.pt` files if you want to continue from saved scenes. The assembled fi
 
 The initial workflow was exercised with **three real 15-second scenes at 512 × 512**, including two temporal continuations, audio refinement, retakes, pause/resume and a 45-second assembled film. This is functional validation, not a quality or performance guarantee for every prompt or machine.
 
+Standalone tests exercise native H3 layout patches and synthetic video/audio context without an external Director lookup, patch idempotence, and graph expansion with and without KJNodes. These checks do not load model weights or replace end-to-end video quality validation.
+
 Automated checks cover scene invalidation, frame budgets, missing checkpoints, stable recipe hashes, AAC joins, and the bundled RAM store's values, pageable allocation and reference release.
 
 ```bash
@@ -184,6 +191,6 @@ Use English for all repository documentation, code, comments, identifiers, inter
 
 ## Credits and license
 
-Created by [Gabriel Xavier](https://github.com/gabxav). MIT licensed; see [LICENSE](LICENSE).
+Created by [Gabriel Xavier](https://github.com/gabxav). Project-owned code is MIT licensed; see [LICENSE](LICENSE). Bundled Director helpers retain Apache-2.0 licensing, and bundled AudioRefine retains its MIT license.
 
-Built on native [ComfyUI](https://github.com/Comfy-Org/ComfyUI) MiniMax H3 support, [AIMixer's Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director) temporal helper and [Adudeguyman's AudioRefine](https://github.com/Adudeguyman/ComfyUI-H3-AudioRefine). The bundled third-party source retains its original MIT notice in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Built on native [ComfyUI](https://github.com/Comfy-Org/ComfyUI) MiniMax H3 support, [AIMixer's Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director) temporal helper and [Adudeguyman's AudioRefine](https://github.com/Adudeguyman/ComfyUI-H3-AudioRefine). Bundled source retains its original licenses and notices, documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

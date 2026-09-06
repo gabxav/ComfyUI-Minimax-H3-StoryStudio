@@ -9,10 +9,9 @@
 ## Installation
 
 1. Use a recent ComfyUI version with native MiniMax H3 support, compatible models, CLIP, and video/audio VAEs.
-2. Install [AIMixer's Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director), which provides temporal context.
-3. Clone this repository into `ComfyUI/custom_nodes/ComfyUI-Minimax-H3-StoryStudio`.
-4. Install `requirements.txt` using ComfyUI's Python. Make FFmpeg and ffprobe available on `PATH`.
-5. Wait for the queue to finish, restart ComfyUI and refresh your browser.
+2. Clone this repository into `ComfyUI/custom_nodes/ComfyUI-Minimax-H3-StoryStudio`.
+3. Install `requirements.txt` using ComfyUI's Python. Make FFmpeg and ffprobe available on `PATH`.
+4. Wait for the queue to finish, restart ComfyUI and refresh your browser.
 
 ```bash
 cd ComfyUI
@@ -27,7 +26,7 @@ python -m pip install -r custom_nodes/ComfyUI-Minimax-H3-StoryStudio/requirement
 
 Adjust paths for your current directory. On Windows portable, use `python_embeded\python.exe`. If you have an older local StoryStudio version, move its directory outside `custom_nodes` before restarting; keep only one installation.
 
-The separate AudioRefine package is not required. KJNodes/SageAttention are optional: select `attention=disabled` if they are unavailable.
+No separate Director, AudioRefine or KJNodes package is required. Temporal context and AudioRefine are bundled. `attention=auto` uses KJNodes SageAttention when installed and otherwise uses native ComfyUI attention.
 
 ## Your first story
 

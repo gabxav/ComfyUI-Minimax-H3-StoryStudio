@@ -1,0 +1,2 @@
+# Preserve the upstream snapshot byte-for-byte, including its CRLF endings.
+vendor/director/*.py -text whitespace=cr-at-eol

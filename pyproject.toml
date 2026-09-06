@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-minimax-h3-storystudio"
-version = "0.1.0"
+version = "0.2.0"
 description = "Scene-based MiniMax H3 storytelling for ComfyUI with temporal continuity and bundled AudioRefine RAM fix."
 readme = "README.md"
 requires-python = ">=3.10"
